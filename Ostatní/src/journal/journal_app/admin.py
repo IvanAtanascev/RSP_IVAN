@@ -1,3 +1,5 @@
+from .models import Uzivatel, Autor
 from django.contrib import admin
 
-# Register your models here.
+admin.site.register(Uzivatel)
+admin.site.register(Autor)
