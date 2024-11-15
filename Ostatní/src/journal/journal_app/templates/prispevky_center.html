@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Moje Prispevky</title>
+</head>
+
+<body>
+    <h1>Prispevky</h1>
+
+    {% if prispevky %}
+    <ul>
+        {% for prispevek in prispevky %}
+        <li>{{ prispevek.nazev }} - {{ prispevek.stav }} (Submitted on {{ prispevek.datum_podani }})</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>You have no prispevky.</p>
+    {% endif %}
+</body>
+
+</html>
