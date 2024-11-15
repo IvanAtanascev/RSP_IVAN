@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .forms import UserRegisterForm, UserLoginForm
+from .forms import UserRegisterForm, UserLoginForm, PrispevekForm
 from django.contrib.auth.views import LoginView
-from .models import Autor
+from .models import Autor, Prispevek
+from django.contrib.auth.decorators import login_required, permission_required
 
 
 def register(request):
@@ -34,3 +35,32 @@ def index(request):
 class CustomLoginView(LoginView):
     form_class = UserLoginForm
     template_name = "login.html"
+
+
+@login_required
+@permission_required("journal_app.can_view_own_koncept", raise_exception=False)
+def prispevky_center(request):
+    autor = request.user
+    prispevky = Prispevek.objects.filter(autor=autor)
+
+    return render(request, "prispevky_center.html", {"prispevky": prispevky})
+
+
+@login_required
+@permission_required("journal_app.can_submit_articles", raise_exception=False)
+def add_prispevek(request):
+    if request.method == "POST":
+        form = PrispevekForm(request.POST, request.FILES)
+        if form.is_valid():
+            prispevek = form.save(commit=False)
+            autor = Autor.objects.get(uzivatel_id=request.user.uzivatel_id)
+            prispevek.autor = autor
+
+            pdf_file = request.FILES["obsah"]
+            prispevek.obsah = pdf_file.read()
+            prispevek.save()
+            return redirect("prispevky_prehled")
+    else:
+        form = PrispevekForm()
+
+    return render(request, "add_prispevek.html", {"form": form})

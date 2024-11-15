@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import Uzivatel
+from .models import Uzivatel, Prispevek
+import magic
 
 
 class UserRegisterForm(UserCreationForm):
@@ -27,3 +28,25 @@ class UserRegisterForm(UserCreationForm):
 class UserLoginForm(AuthenticationForm):
     username = forms.EmailField(label="Email", required=True)
     password = forms.CharField(widget=forms.PasswordInput, label="Heslo")
+
+
+class PrispevekForm(forms.ModelForm):
+    obsah = forms.FileField(label="Dokument (PDF)", required=True)
+
+    class Meta:
+        model = Prispevek
+        fields = ["nazev", "obsah", "popis", "stav", "contact_info_authors"]
+
+    def clean_obsah(self):
+        obsah = self.cleaned_data.get("obsah")
+        if obsah:
+            if not obsah.name.lower().endswith(".pdf"):
+                raise forms.ValidationError("Only PDF files are allowed.")
+
+            mime = magic.Magic(mime=True)
+            mime_type = mime.from_buffer(obsah.read(1024))
+            if mime_type != "application/pdf":
+                raise forms.ValidationError("File must be a valid PDF.")
+
+            obsah.seek(0)
+        return obsah
