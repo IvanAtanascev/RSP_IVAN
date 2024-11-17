@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Moje přidělené posudky{% endblock %}
+{% block content %}
+<h1>Posudky</h1>
+{% if posudky %}
+<ul>
+    {% for posudek in posudky %}
+    <li>
+        <strong>Příspěvek:</strong> {{ posudek.prispevek.nazev }}<br>
+        <strong>Status:</strong> {{ posudek.get_stav_display }}<br>
+        <strong>Popis:</strong> <p>{{ posudek.prispevek.popis }}</p><br>
+        <strong>Kontaktní info na autory:</strong> <p>{{ posudek.prispevek.contact_info_authors }}</p><br>
+        {% if posudek.stav == 'prirazeno' %}
+        <a href="{% url 'complete_posudek' posudek_id=posudek.posudek_id %}"><button class="primaryButton">Odeslat
+                posudek</button></a>
+        {% endif %}
+        <a href="{% url 'view_pdf' prispevek_id=posudek.prispevek.prispevek_id %}" target="_blank"><button
+                class="secondaryButton">Otevřít PDF</button></a>
+    </li>
+    <hr />
+    <br />
+    {% endfor %}
+</ul>
+{% else %}
+<p>Nemáte přiřazeny žádné posudky.</p>
+{% endif %}
+{% endblock %}

@@ -1,18 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Register</title>
-</head>
-<body>
-    <h2>Register</h2>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
-</body>
-
-</html>
+{% extends "base.html" %}
+{% block title %}Registrace{% endblock %}
+{% block content %}
+<h2>Registrace</h2>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Zaregistrovat se</button>
+</form>
+<p>Už máte účet? <a href="{% url 'login' %}">Přihlásit se</a></p>
+{% endblock %}

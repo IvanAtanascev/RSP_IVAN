@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Upravit příspěvek{% endblock %}
+
+{% block content %}
+    <h1>Upravit příspěvek</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Uložít změny</button>
+    </form>
+    <p><a href="{% url 'prispevky_prehled' %}">Back to Prispevky</a></p>
+{% endblock %}

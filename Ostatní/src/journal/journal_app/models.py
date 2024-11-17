@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager, Permission
 from django.contrib.contenttypes.models import ContentType
+from django.utils.timezone import now
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
 
 
 class UzivatelManager(BaseUserManager):
@@ -17,6 +20,22 @@ class UzivatelManager(BaseUserManager):
             permissions = Permission.objects.filter(
                 content_type=content_type,
                 codename__in=["can_submit_articles", "can_view_own_koncept"],
+            )
+            user.user_permissions.add(*permissions)
+
+        if isinstance(user, Redaktor):
+            content_type = ContentType.objects.get_for_model(Redaktor)
+            permissions = Permission.objects.filter(
+                content_type=content_type,
+                codename__in=["can_assign_posudek"],
+            )
+            user.user_permissions.add(*permissions)
+
+        if isinstance(user, Recenzent):
+            content_type = ContentType.objects.get_for_model(Recenzent)
+            permissions = Permission.objects.filter(
+                content_type=content_type,
+                codename__in=["can_send_posudek"],
             )
             user.user_permissions.add(*permissions)
 
@@ -50,6 +69,15 @@ class Uzivatel(AbstractUser):
     def __str__(self):
         return self.email
 
+    def is_recenzent(self):
+        return hasattr(self, "recenzent")
+
+    def is_autor(self):
+        return hasattr(self, "autor")
+
+    def is_redaktor(self):
+        return hasattr(self, "redaktor")
+
 
 class Autor(Uzivatel):
     contact_information = models.TextField()
@@ -61,20 +89,102 @@ class Autor(Uzivatel):
         ]
 
     def __str__(self):
-        return f"{self.name} (Autor)"
+        return f"{self.email} (Autor)"
+
+
+class Redaktor(Uzivatel):
+    oblast_expertizy = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.email} (Redaktor)"
+
+    class Meta:
+        permissions = [
+            ("can_assign_posudek", "Can assign a review to a Recenzent"),
+        ]
+
+
+class Recenzent(Uzivatel):
+    class Meta:
+        permissions = [
+            ("can_send_posudek", "Can review"),
+        ]
+
+    def __str__(self):
+        return f"{self.email} (Recenzent)"
+
+
+class Posudek(models.Model):
+    posudek_id = models.AutoField(primary_key=True)
+
+    originalita_hodnoceni = models.IntegerField(
+        null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(10)]
+    )
+    odbornost_hodnoceni = models.IntegerField(
+        null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(10)]
+    )
+    jazykova_uroven_hodnoceni = models.IntegerField(
+        null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(10)]
+    )
+    prispevek_hodnoceni = models.IntegerField(
+        null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(10)]
+    )
+
+    otevrena_zpetna_vazba = models.TextField(null=True, blank=True)
+    datum_posudku = models.DateField(null=True, blank=True)
+
+    STAV_CHOICES = [
+        ("prirazeno", "Přiřazeno"),
+        ("odeslano", "Odesláno"),
+    ]
+
+    stav = models.CharField(
+        max_length=20,
+        choices=STAV_CHOICES,
+        default="prirazeno",
+    )
+
+    redaktor = models.ForeignKey(
+        "Redaktor",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="posudky",
+    )
+    recenzent = models.ForeignKey(
+        "Recenzent",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="posudky",
+    )
+    prispevek = models.ForeignKey(
+        "Prispevek",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="posudky",
+    )
+
+    def __str__(self):
+        return f"Posudek {self.posudek_id} - Prispevek: {self.prispevek} (Redaktor: {self.redaktor}, Recenzent: {self.recenzent})"
 
 
 class Prispevek(models.Model):
     prispevek_id = models.AutoField(primary_key=True)
     nazev = models.TextField()
     obsah = models.BinaryField(editable=True)
-    datum_podani = models.DateTimeField(auto_now_add=True)
+    datum_podani = models.DateTimeField(default=now)
     popis = models.TextField()
     autor = models.ForeignKey(Autor, on_delete=models.CASCADE, related_name="prispevky")
     contact_info_authors = models.TextField()
 
     STAV_CHOICES = [
         ("koncept", "Koncept"),
+        ("poslano_k_recenzi", "Poslano k recenzi"),
+        ("v_recenzi", "V recenzi"),
+        ("odmitnut", "Odmítnut"),
+        ("prijat", "Přijat"),
     ]
 
     stav = models.CharField(
@@ -85,3 +195,28 @@ class Prispevek(models.Model):
 
     def __str__(self):
         return self.nazev
+
+    def save_obsah_to_history(self):
+        if self.obsah and self.nazev and self.popis and self.contact_info_authors:
+            PrispevekHistory.objects.create(
+                prispevek=self,
+                obsah=self.obsah,
+                nazev=self.nazev,
+                contact_info_authors=self.contact_info_authors,
+                popis=self.popis,
+            )
+
+
+class PrispevekHistory(models.Model):
+    history_id = models.AutoField(primary_key=True)
+    prispevek = models.ForeignKey(
+        "Prispevek", on_delete=models.CASCADE, related_name="history"
+    )
+    nazev = models.TextField()
+    obsah = models.BinaryField()
+    datum_ulozeni = models.DateTimeField(auto_now_add=True)
+    popis = models.TextField()
+    contact_info_authors = models.TextField()
+
+    def __str__(self):
+        return f"Historie {self.prispevek.nazev} - {self.datum_ulozeni}"

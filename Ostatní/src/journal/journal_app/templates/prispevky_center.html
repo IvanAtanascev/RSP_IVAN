@@ -1,22 +1,95 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
+{% block content %}
+{% if user_type == 'redaktor' %}
+<h1>Příspěvky poslané k recenzi</h1>
+{% endif %}
 
-<head>
-    <title>Moje Prispevky</title>
-</head>
+{% if prispevky %}
+<ul>
+    {% for prispevek in prispevky %}
+    <li>
+        <h2>{{ prispevek.nazev }} - {{ prispevek.get_stav_display }} (Nahráno {{ prispevek.datum_podani }})</h2>
 
-<body>
-    <h1>Prispevky</h1>
+        <h3>Popis</h3>
+        <p>{{ prispevek.popis }}</p>
+        <h3>Kontaktní údaje na autory</h3>
+        <p>{{ prispevek.popis }}</p>
 
-    {% if prispevky %}
-    <ul>
-        {% for prispevek in prispevky %}
-        <li>{{ prispevek.nazev }} - {{ prispevek.stav }} (Submitted on {{ prispevek.datum_podani }})</li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>You have no prispevky.</p>
-    {% endif %}
-</body>
+        {% if prispevek.stav == 'koncept' or prispevek.stav == 'odmitnut' %}
+        <a href="{% url 'edit_prispevek' prispevek_id=prispevek.prispevek_id %}"><button
+                class="primaryButton">Edit</button></a>
+        <a href="{% url 'send_for_review' prispevek_id=prispevek.prispevek_id %}"><button class="primaryButton">Poslat
+                k recenzi</button></a>
+        {% endif %}
 
-</html>
+        {% if prispevek.obsah %}
+        <a href="{% url 'view_pdf' prispevek_id=prispevek.prispevek_id %}" target="_blank"><button
+                class="primaryButton">Otevřít PDF</button></a>
+        {% else %}
+        <p>PDF neexistuje</p>
+        {% endif %}
+
+        {% if prispevek.stav == 'odmitnut' or prispevek.stav == 'prijat' %}
+        <h3>Posudky</h3>
+        <ul>
+            {% for posudek in prispevek.posudky.all %}
+            -
+            <li>
+                <strong>Recenzent:</strong>
+                 {{ posudek.recenzent.email }} (Přidělen redaktorem <strong>{{ posudek.redaktor.email }}</strong>)
+                <br />
+                <strong>Originalita:</strong> {{ posudek.originalita_hodnoceni }}<br />
+                <strong>Odbornost:</strong> {{ posudek.odbornost_hodnoceni }}<br />
+                <strong>Jazyková úroveň:</strong> {{ posudek.jazykova_uroven_hodnoceni }}<br />
+                <strong>Celkové hodnocení:</strong> {{ posudek.prispevek_hodnoceni }}<br />
+                <strong>Otevřená zpětná vazba:</strong><p> {{ posudek.otevrena_zpetna_vazba }}</p>
+                <strong>Rozhodnutí: </strong> <i>{{ prispevek.get_stav_display }}</i><br />
+                <strong>Datum Posudku:</strong> {{ posudek.datum_posudku }}<br />
+                <br />
+
+                
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if user_type == 'redaktor' and prispevek.stav == 'poslano_k_recenzi' %}
+        <h3>Priradit recenzenta</h3>
+        <form method="post" action="{% url 'assign_posudek' prispevek_id=prispevek.prispevek_id %}">
+            {% csrf_token %}
+            <label for="recenzent">Recenzent:</label>
+            <select name="recenzent" id="recenzent">
+                {% for recenzent in recenzenti %}
+                <option value="{{ recenzent.uzivatel_id }}">{{ recenzent.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Pridelit recenzenta</button>
+        </form>
+        {% endif %}
+
+        <h2>Historie</h2>
+        <div class="history-section">
+            <button class="toggleHistoryButton secondaryButton">Ukázat historii</button>
+            <div class="historyContainer hidden">
+                <ul>
+                    {% for entry in prispevek.history.all|dictsortreversed:"datum_ulozeni" %}
+                    <li>
+                        <h3>{{ entry.nazev }}</h3>
+                        <p>{{ entry.popis }}</p>
+                        <a href="{% url 'view_pdf_history' entry.history_id %}" target="_blank">
+                            Version saved on {{ entry.datum_ulozeni }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </li>
+    <hr />
+    <br />
+    {% endfor %}
+</ul>
+{% else %}
+<p>Nejsou tu žádné příspěvky.</p>
+{% endif %}
+{% endblock %}

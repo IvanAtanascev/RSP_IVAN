@@ -71,6 +71,10 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "journal.wsgi.application"
+# settings.py
+TIME_ZONE = "Europe/Prague"
+
+USE_TZ = True  # Ensure Django uses timezone-aware datetimes
 
 
 # Database
@@ -86,6 +90,7 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
+LANGUAGE_CODE = "cs"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -119,6 +124,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

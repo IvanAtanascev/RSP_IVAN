@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Vyplnění posudku{% endblock %}
+{% block content %}
+    <h1>Vyplnění posudku pro: {{ posudek.prispevek.nazev }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Odeslat posudek</button>
+    </form>
+{% endblock %}

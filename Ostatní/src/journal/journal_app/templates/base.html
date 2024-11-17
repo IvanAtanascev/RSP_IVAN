@@ -1,26 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}RSP IVAN{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
 </head>
 
 <body>
-    <nav>
-        {% if user.is_authenticated %}
-        <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit">Logout</button>
-        </form>
-        <a href="{% url 'prispevky_prehled' %}">Prispevky</a>
+    <div class="container">
+        <nav class="hstack align-center">
+            <a href="{% url 'landing' %}"><button class="primaryButton">Domů</button></a>
+            {% if user.is_authenticated %}
+            <div class="hstack align-center">
+            <h3>Uživatel: <i>{{ user }}</i></h3>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="primaryButton" type="submit">Odhlásit se</button>
+            </form>
+            </div>
+            {% endif %}
+            <div class="hamburger-menu" id="hamburgerMenu">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                {% if user.is_authenticated %}
+                {% if user.is_recenzent %}
+                <li>
+                    <a href="{% url 'recenzent_posudky' %}">Posudky</a>
+                </li>
+                {% else %}
+                {% if user.is_autor %}
+                <li>
+                    <a href="{% url 'prispevky_prehled' %}">Přehled příspěvků</a>
+                </li>
+                {% endif %}
+                {% if user.is_redaktor %}
+                <li>
+                    <a href="{% url 'prispevky_prehled' %}">Přehled příspěvků poslaných k recenzi</a>
+                </li>
+                {% endif %}
+                {% if user.is_autor %}
+                <li>
+                    <a href="{% url 'prispevky_pridat' %}">Přidat příspěvek</a>
+                </li>
+                {% endif %}
+                {% endif %}
 
-        {% else %}
-        <a href="{% url 'login' %}">Login</a>
-        <a href="{% url 'register' %}">Register</a>
-        {% endif %}
-    </nav>
-    {% block content %}{% endblock %}
+                {% else %}
+                <li>
+                    <a href="{% url 'login' %}">Přihlásit se</a>
+                </li>
+                <li>
+                    <a href="{% url 'register' %}">Zaregistrovat se</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        <hr class="full-width-line" />
+        {% block content %}{% endblock %}
+    </div>
+    <script src="{% static 'script.js' %}" defer></script>
 </body>
 
 </html>
