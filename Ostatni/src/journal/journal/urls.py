@@ -16,7 +16,6 @@ from journal_app.views import (
 )
 from django.contrib.auth.views import LogoutView
 
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("register/", register, name="register"),

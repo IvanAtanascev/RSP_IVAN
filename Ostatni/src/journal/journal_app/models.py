@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.utils.timezone import now
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.utils import timezone
 
 
 class UzivatelManager(BaseUserManager):
@@ -36,6 +35,14 @@ class UzivatelManager(BaseUserManager):
             permissions = Permission.objects.filter(
                 content_type=content_type,
                 codename__in=["can_send_posudek"],
+            )
+            user.user_permissions.add(*permissions)
+
+        if isinstance(user, Sefredaktor):
+            content_type = ContentType.objects.get_for_model(Recenzent)
+            permissions = Permission.objects.filter(
+                content_type=content_type,
+                codename__in=["can_read_agenda"],
             )
             user.user_permissions.add(*permissions)
 
@@ -78,6 +85,9 @@ class Uzivatel(AbstractUser):
     def is_redaktor(self):
         return hasattr(self, "redaktor")
 
+    def is_sefredaktor(self):
+        return hasattr(self, "sefredaktor")
+
 
 class Autor(Uzivatel):
     contact_information = models.TextField()
@@ -112,6 +122,16 @@ class Recenzent(Uzivatel):
 
     def __str__(self):
         return f"{self.email} (Recenzent)"
+
+
+class Sefredaktor(Uzivatel):
+    class Meta:
+        permissions = [
+            ("can_read_agenda", "Can read agenda"),
+        ]
+
+    def __str__(self):
+        return f"{self.email} (Šéfredaktor)"
 
 
 class Posudek(models.Model):
@@ -217,6 +237,22 @@ class PrispevekHistory(models.Model):
     datum_ulozeni = models.DateTimeField(auto_now_add=True)
     popis = models.TextField()
     contact_info_authors = models.TextField()
+    vydani = models.ForeignKey(
+        "Vydani",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="prispevky",
+    )
 
     def __str__(self):
         return f"Historie {self.prispevek.nazev} - {self.datum_ulozeni}"
+
+
+class Vydani(models.Model):
+    cislo = models.IntegerField()
+    tema = models.CharField(max_length=255)
+    date = models.DateField()
+
+    def __str__(self):
+        return f"Časopis RSP č.{self.cislo}"
