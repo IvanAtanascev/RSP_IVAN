@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Seznam Vydání{% endblock %}
+
+{% block content %}
+
+<h1>Seznam Vydání</h1>
+<ul>
+    {% for vydani in vydani_list %}
+    <li>
+        <strong>{{ vydani }}</strong> (Stav: {{ vydani.get_stav_display }})
+        {% if vydani.stav == "pripravuje_se" %}
+        <a href="{% url 'edit_vydani' vydani_id=vydani.id %}">Editovat</a>
+        {% endif %}
+    </li>
+    {% empty %}
+    <li>Žádná vydání nejsou k dispozici.</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

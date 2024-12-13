@@ -1,14 +1,41 @@
 {% extends "base.html" %}
-{% block content %}
 
-<h1>Vydani</h1>
+{% block title %}Vydání and their Příspěvky{% endblock %}
+
+{% block content %}
+<h1>Něco o časopisu RSP</h1>
+<p>Vědecký časopis RSP publikuje nejrůznější vědecké články v různých akademických oblastech. Náš team vysoce kvalifikovaných redaktorů a recenzentů pečlivě kontroluje kvalitu článků a zaručuje tak vysokou kvalitu samotného časopisu.</p>
+
+<h1>Vydání časopisu RSP</h1>
 <ul>
-    {% for jedno_vydani in vydani %}
+    {% for vydani in vydani_list %}
+    {% if vydani.stav == "vydano" %}
     <li>
-        <h2>{{ jedno_vydani }} ({{ jedno_vydani.date }})</h2>
-        <h3>Téma: {{ jedno_vydani.tema }}</h3>
+        <h2>{{ vydani }}</h2>
+        <p>Stav: {{ vydani.get_stav_display }}</p>
+        <p>Téma: {{ vydani.tema }}</p>
+        <p>Datum: {{ vydani.date }}</p>
+        <h3>Příspěvky:</h3>
+        <ul>
+            {% for posudek in vydani.prispevky.all %}
+            <li>
+                <strong>{{ posudek.prispevek.nazev }}</strong>
+                <ul>
+                    <li>Autor: {{ posudek.prispevek.autor.name }}</li>
+                    <li>
+                        <a href="{% url 'view_pdf' prispevek_id=posudek.prispevek.prispevek_id %}"
+                            target="_blank"><button class="primaryButton">Otevřít PDF</button></a>
+                    </li>
+                </ul>
+            </li>
+            {% empty %}
+            <li>Žádné příspěvky.</li>
+            {% endfor %}
+        </ul>
     </li>
+    {% endif %}
+    {% empty %}
+    <li>Žádná vydání nejsou k dispozici.</li>
     {% endfor %}
 </ul>
-
 {% endblock %}

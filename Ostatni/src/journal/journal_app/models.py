@@ -185,6 +185,13 @@ class Posudek(models.Model):
         blank=True,
         related_name="posudky",
     )
+    vydani = models.ForeignKey(
+        "Vydani",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="prispevky",
+    )
 
     def __str__(self):
         return f"Posudek {self.posudek_id} - Prispevek: {self.prispevek} (Redaktor: {self.redaktor}, Recenzent: {self.recenzent})"
@@ -237,13 +244,6 @@ class PrispevekHistory(models.Model):
     datum_ulozeni = models.DateTimeField(auto_now_add=True)
     popis = models.TextField()
     contact_info_authors = models.TextField()
-    vydani = models.ForeignKey(
-        "Vydani",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="prispevky",
-    )
 
     def __str__(self):
         return f"Historie {self.prispevek.nazev} - {self.datum_ulozeni}"

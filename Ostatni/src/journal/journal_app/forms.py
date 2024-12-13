@@ -119,6 +119,7 @@ class PosudekForm(forms.ModelForm):
             "jazykova_uroven_hodnoceni",
             "prispevek_hodnoceni",
             "otevrena_zpetna_vazba",
+            "vydani"
         ]
 
     decision = forms.ChoiceField(

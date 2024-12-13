@@ -1,18 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Create Vydani</title>
-</head>
+{% block title %}Vytvořit nové vydání{% endblock %}
 
-<body>
-    <h1>Create a New Vydani</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Create</button>
-    </form>
-</body>
-
-</html>
+{% block content %}
+<h1>Vytvořit nové vydání</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create</button>
+</form>
+{% endblock %}

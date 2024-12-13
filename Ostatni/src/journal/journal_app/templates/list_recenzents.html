@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Recenzenti{% endblock %}
+{% block content %}
+<ul>
+    {% for recenzent in recenzenti %}
+    <li>
+        <strong>{{ recenzent }}</strong> <br />
+        <a href="{% url 'recenzent_detail' recenzent_id=recenzent.uzivatel_id %}">Recenzentova agenda</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

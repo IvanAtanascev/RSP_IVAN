@@ -42,11 +42,26 @@
                 <li>
                     <a href="{% url 'prispevky_prehled' %}">Přehled příspěvků poslaných k recenzi</a>
                 </li>
+                <li>
+                    <a href="{% url 'list_vydani_redaktor' %}">Přehled vydání časopisu</a>
+                </li>
+                <li>
+                    <a href="{% url 'create_vydani' %}">Vytvořit nové vydání</a>
+                </li>
                 {% endif %}
                 {% if user.is_autor %}
                 <li>
                     <a href="{% url 'prispevky_pridat' %}">Přidat příspěvek</a>
                 </li>
+                {% endif %}
+                {% if user.is_sefredaktor %}
+                <li>
+                    <a href="{% url 'list_redaktors' %}">Zobrazit redaktory</a>
+                </li>
+                <li>
+                    <a href="{% url 'list_recenzents' %}">Zobrazit recenzenty</a>
+                </li>
+
                 {% endif %}
                 {% endif %}
 

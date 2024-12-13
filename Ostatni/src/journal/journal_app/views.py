@@ -18,6 +18,7 @@ from .models import (
     Recenzent,
     Posudek,
     Vydani,
+    Sefredaktor,
 )
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponse
@@ -46,6 +47,12 @@ def register(request):
                 )
             elif user_type == "recenzent":
                 user = Recenzent.objects.create_user(
+                    email=user.email,
+                    name=user.name,
+                    password=form.cleaned_data.get("password1"),
+                )
+            elif user_type == "sefredaktor":
+                user = Sefredaktor.objects.create_user(
                     email=user.email,
                     name=user.name,
                     password=form.cleaned_data.get("password1"),
@@ -281,3 +288,61 @@ def edit_vydani(request, vydani_id):
         form = EditVydaniForm(instance=vydani)
 
     return render(request, "edit_vydani.html", {"form": form, "vydani": vydani})
+
+
+@login_required
+@permission_required("journal_app.can_read_agenda", raise_exception=False)
+def list_all_redaktors(request):
+    redaktori = Redaktor.objects.all()
+
+    return render(request, "list_redaktors.html", {"redaktori": redaktori})
+
+
+@login_required
+@permission_required("journal_app.can_read_agenda", raise_exception=False)
+def list_all_recenzents(request):
+    recenzenti = Recenzent.objects.all()
+
+    return render(request, "list_recenzents.html", {"recenzenti": recenzenti})
+
+
+@login_required
+@permission_required("journal_app.can_read_agenda", raise_exception=False)
+def list_agenda_for_redaktor(request, redaktor_id):
+    redaktor = get_object_or_404(Redaktor, pk=redaktor_id)
+    posudky = Posudek.objects.filter(redaktor=redaktor)
+
+    return render(
+        request, "agenda_redaktor.html", {"redaktor": redaktor, "posudky": posudky}
+    )
+
+
+@login_required
+@permission_required("journal_app.can_read_agenda", raise_exception=False)
+def list_agenda_for_recenzent(request, recenzent_id):
+    recenzent = get_object_or_404(Recenzent, pk=recenzent_id)
+    posudky = Posudek.objects.filter(recenzent=recenzent)
+
+    return render(
+        request, "agenda_recenzent.html", {"recenzent": recenzent, "posudky": posudky}
+    )
+
+
+@login_required
+@permission_required("journal_app.can_assign_posudek", raise_exception=False)
+def list_vydani_redaktor(request):
+    vydani_list = Vydani.objects.all()
+    return render(request, "list_vydani_redaktor.html", {"vydani_list": vydani_list})
+
+
+def list_vydani(request):
+    vydani_list = Vydani.objects.prefetch_related(
+        "prispevky__prispevek",  # Prefetch Prispevky for each Vydani
+        "prispevky__recenzent",  # Prefetch Recenzents for Posudek
+        "prispevky__redaktor",  # Prefetch Redaktors for Posudek
+    ).all()
+
+    context = {
+        "vydani_list": vydani_list,
+    }
+    return render(request, "list_vydani.html", context)

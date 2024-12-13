@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Redaktori{% endblock %}
+{% block content %}
+<ul>
+    {% for redaktor in redaktori %}
+    <li>
+        <strong>{{ redaktor }}</strong> <br />
+        <a href="{% url 'redaktor_detail' redaktor_id=redaktor.uzivatel_id %}">Redaktorova agenda</a>
+
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
