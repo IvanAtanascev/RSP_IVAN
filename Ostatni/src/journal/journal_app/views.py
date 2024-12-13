@@ -6,9 +6,19 @@ from .forms import (
     PrispevekForm,
     EditPrispevekForm,
     PosudekForm,
+    VydaniForm,
+    EditVydaniForm,
 )
 from django.contrib.auth.views import LoginView
-from .models import Autor, Prispevek, PrispevekHistory, Redaktor, Recenzent, Posudek
+from .models import (
+    Autor,
+    Prispevek,
+    PrispevekHistory,
+    Redaktor,
+    Recenzent,
+    Posudek,
+    Vydani,
+)
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponse
 from django.core.exceptions import PermissionDenied
@@ -231,3 +241,43 @@ def recenzent_posudky(request):
     posudky = Posudek.objects.filter(recenzent=recenzent)
 
     return render(request, "recenzent_posudky.html", {"posudky": posudky})
+
+
+@login_required
+def create_vydani(request):
+    if request.method == "POST":
+        form = VydaniForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("landing")
+
+    else:
+        form = VydaniForm()
+
+    return render(request, "create_vydani.html", {"form": form})
+
+
+@login_required
+def list_vydani(request):
+
+    vydani = Vydani.objects.all()
+
+    return render(
+        request,
+        "list_vydani.html",
+        {"vydani": vydani},
+    )
+
+
+def edit_vydani(request, vydani_id):
+    vydani = get_object_or_404(Vydani, pk=vydani_id)
+    if request.method == "POST":
+        form = EditVydaniForm(request.POST, instance=vydani)
+        if form.is_valid():
+            form.save()
+            return redirect("landing")
+
+    else:
+        form = EditVydaniForm(instance=vydani)
+
+    return render(request, "edit_vydani.html", {"form": form, "vydani": vydani})

@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.utils.translation import gettext_lazy as _
-from .models import Uzivatel, Prispevek, Recenzent, Redaktor, Posudek
+from .models import Uzivatel, Prispevek, Recenzent, Redaktor, Posudek, Vydani
 import magic
 
 
@@ -22,6 +22,7 @@ class UserRegisterForm(UserCreationForm):
         ("autor", ("Autor")),
         ("redaktor", ("Redaktor")),
         ("recenzent", ("Recenzent")),
+        ("sefredaktor", ("Šéfredaktor")),
     ]
 
     user_type = forms.ChoiceField(
@@ -132,3 +133,27 @@ class PosudekForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         return cleaned_data
+
+
+class VydaniForm(forms.ModelForm):
+
+    cislo = forms.IntegerField(min_value=1)
+
+    class Meta:
+        model = Vydani
+        fields = [
+            "cislo",
+            "tema",
+        ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        return cleaned_data
+
+
+class EditVydaniForm(forms.ModelForm):
+    date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+
+    class Meta:
+        model = Vydani
+        fields = ["date", "stav"]

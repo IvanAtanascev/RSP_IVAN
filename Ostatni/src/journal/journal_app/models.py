@@ -39,7 +39,7 @@ class UzivatelManager(BaseUserManager):
             user.user_permissions.add(*permissions)
 
         if isinstance(user, Sefredaktor):
-            content_type = ContentType.objects.get_for_model(Recenzent)
+            content_type = ContentType.objects.get_for_model(Sefredaktor)
             permissions = Permission.objects.filter(
                 content_type=content_type,
                 codename__in=["can_read_agenda"],
@@ -252,7 +252,18 @@ class PrispevekHistory(models.Model):
 class Vydani(models.Model):
     cislo = models.IntegerField()
     tema = models.CharField(max_length=255)
-    date = models.DateField()
+    date = models.DateField(null=True, blank=True)
+
+    STAV_CHOICES = [
+        ("pripravuje_se", "Připravuje se"),
+        ("vydano", "Vydáno"),
+    ]
+
+    stav = models.CharField(
+        max_length=20,
+        choices=STAV_CHOICES,
+        default="pripravuje_se",
+    )
 
     def __str__(self):
         return f"Časopis RSP č.{self.cislo}"

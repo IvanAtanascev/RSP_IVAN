@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Vydani</h1>
+<ul>
+    {% for jedno_vydani in vydani %}
+    <li>
+        <h2>{{ jedno_vydani }} ({{ jedno_vydani.date }})</h2>
+        <h3>Téma: {{ jedno_vydani.tema }}</h3>
+    </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

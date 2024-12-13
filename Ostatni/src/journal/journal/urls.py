@@ -13,6 +13,9 @@ from journal_app.views import (
     assign_posudek,
     complete_posudek,
     recenzent_posudky,
+    create_vydani,
+    list_vydani,
+    edit_vydani,
 )
 from django.contrib.auth.views import LogoutView
 
@@ -45,4 +48,7 @@ urlpatterns = [
         name="complete_posudek",
     ),
     path("recenzent/posudky/", recenzent_posudky, name="recenzent_posudky"),
+    path("vydani/create/", create_vydani, name="create_vydani"),
+    path("vydani/list/", list_vydani, name="list_vydani"),
+    path("vydani/edit/<int:vydani_id>/", edit_vydani, name="edit_vydani"),
 ]
